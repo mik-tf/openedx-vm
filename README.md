@@ -53,7 +53,7 @@ This deployment includes:
 
 1. **Clone or download this repository**:
    ```bash
-   git clone https://github.com/yourusername/openedx-docker.git openedx
+   git clone https://github.com/mik-tf/openedx-vm.git openedx
    cd openedx
    ```
 
