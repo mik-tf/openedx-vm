@@ -1,0 +1,118 @@
+version: "3.7"
+
+services:
+  # MySQL database
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-openedx}
+      - MYSQL_DATABASE=openedx
+      - MYSQL_USER=${MYSQL_USER:-openedx}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-openedx}
+    networks:
+      - openedx_network
+    command: --character-set-server=utf8 --collation-server=utf8_general_ci
+
+  # Open edX LMS container
+  lms:
+    image: overhangio/openedx:14.0.3
+    container_name: lms
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./config/lms/config.yml:/openedx/config.yml
+      - ./config/lms/cms.env.json:/openedx/config/cms.env.json
+      - ./config/lms/lms.env.json:/openedx/config/lms.env.json
+      - openedx_data:/openedx/data
+    environment:
+      - SERVICE_VARIANT=lms
+      - SETTINGS=tutor.production
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - MYSQL_USER=${MYSQL_USER:-openedx}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-openedx}
+      - MYSQL_DATABASE=openedx
+    networks:
+      - openedx_network
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  # Open edX CMS (Studio) container
+  cms:
+    image: overhangio/openedx:14.0.3
+    container_name: cms
+    restart: unless-stopped
+    depends_on:
+      - mysql
+      - lms
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./config/lms/config.yml:/openedx/config.yml
+      - ./config/lms/cms.env.json:/openedx/config/cms.env.json
+      - ./config/lms/lms.env.json:/openedx/config/lms.env.json
+      - openedx_data:/openedx/data
+    environment:
+      - SERVICE_VARIANT=cms
+      - SETTINGS=tutor.production
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - MYSQL_USER=${MYSQL_USER:-openedx}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-openedx}
+      - MYSQL_DATABASE=openedx
+    networks:
+      - openedx_network
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  # Caddy for automatic SSL and reverse proxy
+  caddy:
+    image: caddy:2
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./config/caddy/Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      - DOMAIN_NAME=${DOMAIN_NAME:-localhost}
+    depends_on:
+      - lms
+      - cms
+    networks:
+      - openedx_network
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  # Watchtower for automatic updates
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 86400 --cleanup --label-enable
+    networks:
+      - openedx_network
+
+networks:
+  openedx_network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  openedx_data:
+  caddy_data:
+  caddy_config:

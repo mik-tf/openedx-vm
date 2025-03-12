@@ -1,0 +1,45 @@
+{
+    # Global Caddy settings
+    email {$CONTACT_EMAIL}
+}
+
+# Main domain configuration
+{$DOMAIN_NAME} {
+    # Automatic HTTPS
+    tls {
+        # This will automatically obtain certificates
+    }
+
+    # Health check endpoint
+    handle /health {
+        respond "OK" 200
+    }
+
+    # Proxy to LMS
+    handle {
+        reverse_proxy lms:8000 {
+            header_up Host {host}
+            header_up X-Real-IP {remote}
+            header_up X-Forwarded-For {remote}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+}
+
+# Studio domain configuration
+studio.{$DOMAIN_NAME} {
+    # Automatic HTTPS
+    tls {
+        # This will automatically obtain certificates
+    }
+
+    # Proxy to CMS
+    handle {
+        reverse_proxy cms:8000 {
+            header_up Host {host}
+            header_up X-Real-IP {remote}
+            header_up X-Forwarded-For {remote}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+}

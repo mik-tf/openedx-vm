@@ -1,0 +1,65 @@
+# Common Open edX Configuration for both LMS and CMS
+---
+PLATFORM_NAME: "${PLATFORM_NAME}"
+SITE_NAME: "${LMS_BASE}"
+LMS_BASE: "${LMS_BASE}"
+CMS_BASE: "${CMS_BASE}"
+LMS_ROOT_URL: "https://${LMS_BASE}"
+CMS_ROOT_URL: "https://${CMS_BASE}"
+
+# Features
+FEATURES:
+  ENABLE_DISCUSSION_SERVICE: true
+  ENABLE_COURSEWARE_SEARCH: true
+  ENABLE_COURSE_DISCOVERY: true
+  ENABLE_DASHBOARD_SEARCH: true
+  ENABLE_COMBINED_LOGIN_REGISTRATION: true
+  PREVIEW_LMS_BASE: "${LMS_BASE}"
+  ALLOW_ALL_ADVANCED_COMPONENTS: true
+
+# Email Settings (Replace with your SMTP settings for production)
+EMAIL_BACKEND: "django.core.mail.backends.console.EmailBackend"
+EMAIL_HOST: "smtp.example.com"
+EMAIL_PORT: 587
+EMAIL_USE_TLS: true
+EMAIL_HOST_USER: "your-email@example.com"
+EMAIL_HOST_PASSWORD: "your-email-password"
+DEFAULT_FROM_EMAIL: "${CONTACT_EMAIL}"
+
+# Authentication
+REGISTRATION_EXTRA_FIELDS:
+  city: hidden
+  country: hidden
+  gender: hidden
+  goals: hidden
+  honor_code: hidden
+  level_of_education: hidden
+  mailing_address: hidden
+  year_of_birth: hidden
+
+# MySQL Configuration
+DATABASES:
+  default:
+    ENGINE: "django.db.backends.mysql"
+    NAME: "openedx"
+    USER: "${MYSQL_USER}"
+    PASSWORD: "${MYSQL_PASSWORD}"
+    HOST: "mysql"
+    PORT: 3306
+    ATOMIC_REQUESTS: true
+    CONN_MAX_AGE: 60
+
+# Redis Configuration
+CACHES:
+  default:
+    BACKEND: "django_redis.cache.RedisCache"
+    LOCATION: "redis://redis:6379/1"
+    KEY_PREFIX: "default"
+    VERSION: "1"
+    OPTIONS:
+      CLIENT_CLASS: "django_redis.client.DefaultClient"
+
+# Session Configuration
+SESSION_ENGINE: "django.contrib.sessions.backends.cache"
+SESSION_COOKIE_DOMAIN: ".${LMS_BASE}"
+SESSION_COOKIE_SECURE: true
