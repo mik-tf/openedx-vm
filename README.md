@@ -1,6 +1,6 @@
 # Open edX Single Instance Deployment
 
-This project provides a simplified solution for deploying Open edX using Docker containers on a single VM.
+This project provides a basic solution for deploying Open edX using Docker containers on a single VM.
 
 ## Overview
 
