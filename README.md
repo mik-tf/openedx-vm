@@ -29,7 +29,7 @@ This deployment includes:
 1. **Update and install dependencies**:
    ```bash
    apt update
-   apt install -y docker.io docker-compose git curl jq
+   apt install -y docker.io docker-compose git curl jq nano
    ```
 
 2. **Create a user for Open edX**:
